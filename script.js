@@ -1,94 +1,104 @@
-const clockCalendarContainer = document.querySelector(".Clock-Calendar");
-// debugger;
-const clockTemplate = document.querySelector('#clock');
-const calendarTemplate = document.querySelector('#calendar');
+const defaultScheme = new CSSStyleSheet();
+defaultScheme.replace(`:host { display: inline-block; 
+    width: 150px; 
+    height: 40px; 
+    padding: 20px;
+    font-size: 32px;
+    text-align: center;
+    background-color: rgba(00,55,00,0.2); }`);
+const hoverScheme = new CSSStyleSheet();
+hoverScheme.replace(`:host { display: inline-block;
+    width: 150px; 
+    height: 40px; 
+    padding: 20px;
+    font-size: 32px;
+    text-align: center;
+    background-color: rgba(00,55,00,0.5); }`);
+document.adoptedStyleSheets = [defaultScheme, hoverScheme];
 
 class ClockCalendar extends HTMLElement {
-    date = new Date();
-    // clock = document.querySelector('#clock');
-    // calendar = document.querySelector('#calendar');
-    // clockInstance = document.importNode(clock.content, true);
-    // calendarInstance = document.importNode(calendar.content, true);
-    // currentTemplate = clockInstance;
-
-
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot.adoptedStyleSheets = [defaultScheme];
+      }
     connectedCallback() {
         this.clock = true;
         this.shortTime = true;
         this.uaDate = true;
-        this.appendChild(document.importNode(clockTemplate.content, true));
-        // const clock = document.querySelector('#clock');
-        // const calendar = document.querySelector('#calendar');
-        // const clockInstance = document.importNode(clock.content, true);
-        // const calendarInstance = document.importNode(calendar.content, true);
-        // const currentTemplate = clockInstance;
-        if (this.clock) {
-            this.setShortDate();
-        }
+ 
         this.addEventListener('contextmenu', e => {
-            debugger;
             e.preventDefault();
-
-            // if (e.button === 3) {
-
-                if (this.clock) {
-                    this.setShortDate();
-                    this.clock = !this.clock;
-                } else {
-                    this.setFullDate();
-                    this.clock = !this.clock;
-                }
-            // }
+            this.clock = !this.clock;
+            this.draw();
         });
-        this.addEventListener('click', e => {
+        this.addEventListener('click', () => {
             if (this.clock) {
-                if (this.shortTime) {
-                    this.setFullDate();
-                } else {
-                    this.setShortDate();
-                }
                 this.shortTime = !this.shortTime;
             } else {
-                if (this.uaDate) {
-                    this.setUEDate();
-                } else {
-                    this.setUADate();
-                }
                 this.uaDate = !this.uaDate;
             }
+            this.draw();
         });
+        this.addEventListener('mouseover', () => {
+            this.shadowRoot.adoptedStyleSheets = [hoverScheme];
+        });
+        this.addEventListener('mouseout', () => {
+            this.shadowRoot.adoptedStyleSheets = [defaultScheme];
+        })
 
-        // this.appendChild(clockInstance);
-        this.setFullDate();
-
+        setInterval(() => {
+            this.draw();
+        }, 1000);
     }
-    setShortDate() {
-        this.innerHTML = this.date.getHours() + ':' + this.date.getMinutes();      
+    draw() {
+        const date = new Date();
+        if (this.clock) {
+            this.drawTime(date);
+        } else {
+            this.drawDate(date);
+        }
     }
-    setFullDate() {
-        this.innerHTML = this.date.getHours() + ':'
-                       + this.date.getMinutes() + ':'
-                       + this.date.getSeconds();
+    drawTime(date) {
+        if (this.shortTime) {
+            this.drawShortTime(date);
+        } else {
+            this.drawFullTime(date);
+        }
     }
-    setUADate() {
-        this.innerHTML = this.date.getDay() + '/'
-            + (this.date.getMonth() + 1) + '/'
-            + this.date.getFullYear();
+    drawShortTime(date) {
+        this.shadowRoot.innerHTML = this.fillUp(date.getHours()) + ':' + this.fillUp(date.getMinutes());
     }
-    setUEDate() {
-        this.innerHTML = (this.date.getMonth() + 1) + '/'
-            + this.date.getDay() + '/'
-            + this.date.getFullYear();
+    drawFullTime(date) {
+        this.shadowRoot.innerHTML = this.fillUp(date.getHours()) + ':'
+        + this.fillUp(date.getMinutes()) + ':'
+        + this.fillUp(date.getSeconds());
     }
-
+    drawDate(date) {
+        if (this.uaDate) {
+            this.drawUADate(date);
+        } else {
+            this.drawEUDate(date);
+        }
+    }
+    drawUADate(date) {
+        this.shadowRoot.innerHTML = this.fillUp(date.getDay()) + '.'
+            + this.fillUp((date.getMonth() + 1)) + '.'
+            + this.fillUp(date.getFullYear());
+    }
+    drawEUDate(date) {
+        this.shadowRoot.innerHTML = this.fillUp((date.getMonth() + 1)) + '/'
+            + this.fillUp(date.getDay()) + '/'
+            + this.fillUp(date.getFullYear());
+    }
+    fillUp(time) {
+        while (time.toString().length < 2) {
+            time = "0" + time;
+        }
+        return time;
+    }
 }
 
 window.customElements.define("clock-calendar", ClockCalendar);
 
-function fillUp(date) {
-    if (date.length < 2) {
-        date = "0" + date;
-    }
-    return date;
-}
 
