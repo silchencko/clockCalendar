@@ -53,52 +53,46 @@ class ClockCalendar extends HTMLElement {
     }
     draw() {
         const date = new Date();
+        let content = '';
         if (this.clock) {
-            this.drawTime(date);
+            content = this.drawTime(date);
         } else {
-            this.drawDate(date);
+            content = this.drawDate(date);
         }
+        this.shadowRoot.innerHTML = content;
     }
     drawTime(date) {
         if (this.shortTime) {
-            this.drawShortTime(date);
+            return this.drawShortTime(date);
         } else {
-            this.drawFullTime(date);
-        }
+            return this.drawFullTime(date);
+        } 
     }
     drawShortTime(date) {
-        this.shadowRoot.innerHTML = this.fillUp(date.getHours()) + ':' + this.fillUp(date.getMinutes());
+        const options = { hour: '2-digit', minute: '2-digit' };
+        return date.toLocaleTimeString('uk', options);
     }
     drawFullTime(date) {
-        this.shadowRoot.innerHTML = this.fillUp(date.getHours()) + ':'
-        + this.fillUp(date.getMinutes()) + ':'
-        + this.fillUp(date.getSeconds());
+        const options = { hour: '2-digit', minute: '2-digit', second:'2-digit' };
+        return date.toLocaleTimeString('uk', options);
     }
     drawDate(date) {
         if (this.uaDate) {
-            this.drawUADate(date);
+            return this.drawUADate(date);
         } else {
-            this.drawEUDate(date);
+            return this.drawEUDate(date);
         }
     }
     drawUADate(date) {
-        this.shadowRoot.innerHTML = this.fillUp(date.getDay()) + '.'
-            + this.fillUp((date.getMonth() + 1)) + '.'
-            + this.fillUp(date.getFullYear());
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        return date.toLocaleDateString('uk', options);
     }
     drawEUDate(date) {
-        this.shadowRoot.innerHTML = this.fillUp((date.getMonth() + 1)) + '/'
-            + this.fillUp(date.getDay()) + '/'
-            + this.fillUp(date.getFullYear());
-    }
-    fillUp(time) {
-        while (time.toString().length < 2) {
-            time = "0" + time;
-        }
-        return time;
+        const options = { year: '2-digit', month: '2-digit', day: '2-digit' };
+        return date.toLocaleDateString('en-US', options);
     }
 }
 
-window.customElements.define("clock-calendar", ClockCalendar);
+customElements.define("clock-calendar", ClockCalendar);
 
 
